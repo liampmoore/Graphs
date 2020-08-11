@@ -186,6 +186,9 @@ class Graph:
         if starting_vertex == destination_vertex:
             return path
        
+        # create a variable to hold the shortest path starting as None
+        shortest = None
+
         # loop through each neighbor of the current vertex
         for neighbor in self.get_neighbors(starting_vertex):
             # if you haven't visited the neighbor
@@ -196,10 +199,16 @@ class Graph:
                 neighborpath = self.dfs_recursive(neighbor, destination_vertex, path.copy())
                 # if the call of this function on the current neighbor found a path to the end
                 if neighborpath is not None:
-                    # return that path
-                    return neighborpath
-        # if no path to the end was found in any recursive calls we return None
-        return None
+                    # if shortest is None change shortest to the neighborpath
+                    if shortest is None:
+                        shortest = neighborpath
+                    # otherwise check if the current neighborpath is shorter than shortest
+                    elif len(neighborpath) < len(shortest):
+                        # if so, change the shortest
+                        shortest = neighborpath
+        # if no path to the end was found in any recursive calls shortest will be None
+        # otherwise we will have looped through all paths and found the shortest
+        return shortest
 
 if __name__ == '__main__':
     graph = Graph()  # Instantiate your graph
