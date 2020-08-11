@@ -113,6 +113,8 @@ class Graph:
         q.enqueue(starting_path)
         # create a set to store visited vertices
         visited = set()
+        # create a variable for shortest
+        shortest = None
         # while queueu not empty
         while len(q) > 0:
             # dequeue the first path
@@ -123,8 +125,11 @@ class Graph:
             if current_vertex not in visited:
                 # check if it is the target
                 if current_vertex == destination_vertex:
-                    # return the path to the target
-                    return current_path
+                    # if the shortest is None
+                    if shortest is None:
+                        shortest = current_path
+                    elif len(current_path) < len(shortest):
+                        shortest = current_path
                 # mark it visited
                 visited.add(current_vertex)
                 # add path to naighbours to back of queue
@@ -132,8 +137,8 @@ class Graph:
                     q.enqueue(current_path.copy() + [neighbor])
                     # copy the path
                     # append the neighbor to the back of it
-        # return none
-        return None
+        # return None if you didn't find it, otherwise return shortest path
+        return shortest
 
 
     def dfs(self, starting_vertex, destination_vertex):
@@ -148,6 +153,8 @@ class Graph:
         s.push(starting_path)
         # create a set to store visited vertices
         visited = set()
+        # create a variable to hold the shortest path
+        shortest = None
         # while queueu not empty
         while len(s) > 0:
             # dequeue the first path
@@ -158,8 +165,11 @@ class Graph:
             if current_vertex not in visited:
                 # check if it is the target
                 if current_vertex == destination_vertex:
-                    # return the path to the target
-                    return current_path
+                    # if the shortest is None
+                    if shortest is None:
+                        shortest = current_path
+                    elif len(current_path) < len(shortest):
+                        shortest = current_path
                 # mark it visited
                 visited.add(current_vertex)
                 # add path to naighbours to back of queue
@@ -167,8 +177,8 @@ class Graph:
                     s.push(current_path.copy() + [neighbor])
                     # copy the path
                     # append the neighbor to the back of it
-        # return none
-        return None
+        # return shortest
+        return shortest
 
     def dfs_recursive(self, starting_vertex, destination_vertex, path = [], visited = set()):
         """
