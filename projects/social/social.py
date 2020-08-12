@@ -1,3 +1,5 @@
+import random
+from util import Stack, Queue 
 class User:
     def __init__(self, name):
         self.name = name
@@ -42,11 +44,31 @@ class SocialGraph:
         self.last_id = 0
         self.users = {}
         self.friendships = {}
+        
         # !!!! IMPLEMENT ME
 
+        if num_users < avg_friendships:
+            raise ValueError('Average friendships can not exceed the number of users.')
+
         # Add users
+        for i in range(1, num_users + 1):
+            self.add_user(i)
 
         # Create friendships
+
+        # loop through range of user ids
+        for user_id in range(1, num_users + 1):
+            # loop a random amount from zero to twice the average
+            for i in range(random.randint(0, avg_friendships)):
+                # pick a random key from the list of existing users
+                friend_id = random.choice(list(self.users.keys()))
+                # make sure the key isn't already in the friends list to prevent overwriting,
+                # which ensures our given number for average friends will be accurate
+                while friend_id in self.friendships[user_id] or user_id == friend_id:
+                    friend_id = random.choice(list(self.users.keys()))
+                # add that random key the current user's friend list
+                self.add_friendship(user_id, friend_id)
+      
 
     def get_all_social_paths(self, user_id):
         """
@@ -59,12 +81,43 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+
+                # create a queue and enqueue a starting verted
+        q = Queue()
+        q.enqueue([user_id])
+
+        # while the queue is not empty
+        while len(q) > 0:
+            # deque the path
+            current_path = q.dequeue()
+            current_vertex = current_path[-1]
+            # if vertex has not been visited
+            if current_vertex not in visited:
+                # mark it as visited
+                visited[current_vertex] = current_path
+                # loop through neighbors
+                for friend in self.friendships[current_vertex]:
+                    # enqueue each one
+                    q.enqueue(current_path.copy() + [friend])
+            else:
+                if len(current_path) < len(visited[current_vertex]):
+                    visited[current_vertex] = current_path
+
         return visited
 
 
 if __name__ == '__main__':
     sg = SocialGraph()
     sg.populate_graph(10, 2)
-    print(sg.friendships)
+    # print(sg.friendships)
     connections = sg.get_all_social_paths(1)
-    print(connections)
+    # print(connections)
+
+    total = 0
+    
+    for friends in sg.friendships.values():
+        total += len(friends)
+
+    average = total/len(sg.friendships)
+
+    print(average)
