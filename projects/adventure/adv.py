@@ -61,7 +61,9 @@ def bfs(starting_vertex, destination_vertex, graph):
         # if vertex is not in visited
         if current_vertex not in visited:
             # check if it is the target
-            if current_vertex == destination_vertex:
+            if str(current_vertex) == str(destination_vertex):
+                if len(current_path) == 3:
+                    return current_path
                 # if the shortest is None
                 if shortest is None:
                     shortest = current_path
@@ -70,7 +72,7 @@ def bfs(starting_vertex, destination_vertex, graph):
             # mark it visited
             visited.add(current_vertex)
             # add path to naighbours to back of queue
-            for neighbor in graph[current_vertex].values():
+            for direction, neighbor in graph[str(current_vertex)].items():
                 q.append(current_path.copy() + [neighbor])
                 # copy the path
                 # append the neighbor to the back of it
@@ -100,9 +102,7 @@ else:
         json.dump(graph, json_file) 
 
 
-
-
-# Fill this out with directions to walk
+# # Fill this out with directions to walk
 
 traversal_path = []
 
@@ -124,69 +124,74 @@ while len(s) > 0:
         # mark it as visited
         visited.add(str(current))
 
-        num_neighbors_pushed = 0
+    
         # loop through neighbors
         for neighbor in graph[current].values():
             if str(neighbor) not in visited:
                 # push each one
-                if current == str(22):
-                    print(neighbor)
                 s.append(neighbor)
-                num_neighbors_pushed += 1
-
-
+      
+       
+        
         
         # if at a dead end we must go back up the graph before we go to the next in queue
         # use a BFS shortest path to get the path from current to the next ID in the queue
-        # we only need to do this search if
-        if num_neighbors_pushed == 0:
-            if traversal_path[-2] in graph[s[-1]].values():
-                traversal_path.append(traversal_path[-2])
-            else:
-                traversal_path = traversal_path + bfs(traversal_path[-1], s[-1], graph)[1:-2]
-
+        if len(visited) != 500 and str(s[-1]) not in graph[str(current)].values():
+            if str(current) == '50':
+                print(s[-1])
+            backtrack = bfs(str(current), str(s[-1]), graph)[1:-1]
+            
+            traversal_path = traversal_path + backtrack
+                
 
 # convert the path of node ids to a path of directions
 
-# directional_path = []
-# i = 1
-# current = traversal_path[0]
-# for i in range(len(traversal_path)):
-#     previous = current
-#     current = traversal_path[i]
+directional_path = []
+i = 1
+current = traversal_path[0]
+for i in range(len(traversal_path)):
+    previous = current
+    current = traversal_path[i]
 
-#     direction = None
+    direction = None
 
-#     for key, value in graph[previous].items():
-#         if str(value) == str(current):
-#             direction = key
+    for key, value in graph[str(previous)].items():
+        if str(value) == str(current):
+            direction = key
 
+    if direction == None:
+        print(previous, current)
 
-#     print(direction)
-#     directional_path.append(direction)
-
-
-#     i += 1
+    directional_path.append(direction)
 
 
-# traversal_path = directional_path
+    i += 1
+
+
+traversal_path = directional_path
+
+# traversal_path.pop(0)
+
+print(traversal_path)
+
+
 
 # TRAVERSAL TEST
-# visited_rooms = set()
-# player.current_room = world.starting_room
-# visited_rooms.add(player.current_room)
+visited_rooms = set()
+player.current_room = world.starting_room
+visited_rooms.add(player.current_room)
 
-# for move in traversal_path:
-#     player.travel(move)
-#     visited_rooms.add(player.current_room)
+for move in traversal_path:
+    player.travel(move)
+    visited_rooms.add(player.current_room)
 
-# if len(visited_rooms) == len(room_graph):
-#     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
-# else:
-#     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-#     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
+if len(visited_rooms) == len(room_graph):
+    print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+else:
+    print("TESTS FAILED: INCOMPLETE TRAVERSAL")
+    print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
 
-# print(traversal_path)
+
 
 
 #######
