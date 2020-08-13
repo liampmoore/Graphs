@@ -33,165 +33,104 @@ player = Player(world.starting_room)
 
 # Helper functions
 # reverse direction helper
-reverse = {}
-reverse['n'] = 's'
-reverse['s'] = 'n'
-reverse['w'] = 'e'
-reverse['e'] = 'w'
-# BFS shortest path
-def bfs(starting_vertex, destination_vertex, graph):
-    """
-    Return a list containing the shortest path from
-    starting_vertex to destination_vertex in
-    breath-first order.
-    """
-    # create an empty queue and enqueue the path to the starting vertex id
+
+
+# BFS returning shortest path to specified node
+def bfs(starting_vertex, destination_vertex, get_neighbors):
+    
     starting_path = [starting_vertex]
     q = [starting_path]
-    # create a set to store visited vertices
     visited = set()
-    # create a variable for shortest
-    shortest = None
-    # while queueu not empty
+   
     while len(q) > 0:
-        # dequeue the first path
+      
         current_path = q.pop(0)
-        # grab the last vertex from the path
         current_vertex = current_path[-1]
-        # if vertex is not in visited
+        
         if current_vertex not in visited:
-            # check if it is the target
+
             if str(current_vertex) == str(destination_vertex):
-                if len(current_path) == 3:
-                    return current_path
-                # if the shortest is None
-                if shortest is None:
-                    shortest = current_path
-                elif len(current_path) < len(shortest):
-                    shortest = current_path
-            # mark it visited
+                return current_path
+        
             visited.add(current_vertex)
-            # add path to naighbours to back of queue
-            for direction, neighbor in graph[str(current_vertex)].items():
+          
+            for neighbor in get_neighbors(current_vertex):
                 q.append(current_path.copy() + [neighbor])
-                # copy the path
-                # append the neighbor to the back of it
-    # return None if you didn't find it, otherwise return shortest path
-    return shortest
+
+# dft to traverse to every node    
+def dft(starting_room, get_neighbors):
+
+    traversal = []
+    s = [starting_room]
+    visited = set()
+
+    while len(s) > 0:
+        current = s.pop()
+        if current not in visited:
+            
+            traversal.append(current)
+            visited.add(current)
+
+            for neighbor in get_neighbors(current):
+                s.append(neighbor)
+    return traversal
+
+# get neighbors function
+
+def get_neighbors(current):
+    neighbors = list(room_graph[current][1].values())
+    return neighbors
+
+def get_direction(current, next_room):
+    direction = ''
+    for key, value in room_graph[current][1].items():
+        if value == next_room:
+            return key
+
+# Steps:
+
+# 1: create the traversal using BFT
+
+traversal = dft(world.starting_room.id, get_neighbors)
+
+# 2. loop through the array traversal and fill in gap segments with find shortest path BFS
+
+traversal_no_gaps = []
 
 
-# this will create a graph representation of the connections in the maze
-if path.exists('graph.json'):
-    with open('graph.json') as json_file: 
-        graph = json.load(json_file)
-else:
-    graph = {}
-    complete = set()
-    while len(complete) < 500:
-        previous = player.current_room.id
-        direction = random.choice(player.current_room.get_exits())
-        player.travel(direction)
-        if player.current_room.id not in graph:
-            graph[player.current_room.id] = {}
-            for d in player.current_room.get_exits():
-                graph[player.current_room.id][d] = '?'
-        graph[player.current_room.id][reverse[direction]] = previous
-        if '?' not in graph[player.current_room.id].values():
-            complete.add(player.current_room.id) 
-    with open("graph.json", "w") as json_file:  
-        json.dump(graph, json_file) 
+for i in range(len(traversal) - 1):
+    traversal_no_gaps.append(traversal[i])
+    if traversal[i + 1] not in get_neighbors(traversal[i]):
+        gap = bfs(traversal[i], traversal[i + 1], get_neighbors)[1:-1]
+        traversal_no_gaps = traversal_no_gaps + gap
+traversal_no_gaps.append(traversal[-1])
 
+# 3. Convert the final traversal array into cardinal directions
 
 # # Fill this out with directions to walk
 
 traversal_path = []
 
-# create a stack and push the starting verted
-s = [str(world.starting_room.id)]
-# create a set to store the visited vertices
-visited = set()
-
-# while the stack is not empty
-while len(s) > 0:
-    # pop the first vertex
-    current = str(s.pop())
-    # if vertex has not been visited
-    if str(current) not in visited:
-        
-        # add it to the traversal path
-        traversal_path.append(current)
-
-        # mark it as visited
-        visited.add(str(current))
-
-    
-        # loop through neighbors
-        for neighbor in graph[current].values():
-            if str(neighbor) not in visited:
-                # push each one
-                s.append(neighbor)
-      
-       
-        
-        
-        # if at a dead end we must go back up the graph before we go to the next in queue
-        # use a BFS shortest path to get the path from current to the next ID in the queue
-        if len(visited) != 500 and str(s[-1]) not in graph[str(current)].values():
-            if str(current) == '50':
-                print(s[-1])
-            backtrack = bfs(str(current), str(s[-1]), graph)[1:-1]
-            
-            traversal_path = traversal_path + backtrack
-                
-
-# convert the path of node ids to a path of directions
-
-directional_path = []
-i = 1
-current = traversal_path[0]
-for i in range(len(traversal_path)):
-    previous = current
-    current = traversal_path[i]
-
-    direction = None
-
-    for key, value in graph[str(previous)].items():
-        if str(value) == str(current):
-            direction = key
-
-    if direction == None:
-        print(previous, current)
-
-    directional_path.append(direction)
-
-
-    i += 1
-
-
-traversal_path = directional_path
-
-# traversal_path.pop(0)
-
-print(traversal_path)
-
+for i in range(0, len(traversal_no_gaps) - 1):
+    traversal_path.append(get_direction(traversal_no_gaps[i], traversal_no_gaps[i + 1]))
 
 
 # TRAVERSAL TEST
 visited_rooms = set()
 player.current_room = world.starting_room
-visited_rooms.add(player.current_room)
+visited_rooms.add(player.current_room.id)
 
 for move in traversal_path:
+
     player.travel(move)
-    visited_rooms.add(player.current_room)
+    
+    visited_rooms.add(player.current_room.id)
 
 if len(visited_rooms) == len(room_graph):
     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
-
-
 
 
 #######
