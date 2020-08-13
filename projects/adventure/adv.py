@@ -4,6 +4,8 @@ from world import World
 
 import random
 from ast import literal_eval
+from os import path
+import json
 
 # Load world
 world = World()
@@ -25,10 +27,41 @@ world.print_rooms()
 
 player = Player(world.starting_room)
 
-# Fill this out with directions to walk
-# traversal_path = ['n', 'n']
-traversal_path = []
+reverse = {}
+reverse['n'] = 's'
+reverse['s'] = 'n'
+reverse['w'] = 'e'
+reverse['e'] = 'w'
 
+
+# this will create a graph representation of the connections in the maze
+if path.exists('graph.json'):
+    with open('graph.json') as json_file: 
+        graph = json.load(json_file)
+else:
+    graph = {}
+    complete = set()
+    while len(complete) < 500:
+        previous = player.current_room.id
+        direction = random.choice(player.current_room.get_exits())
+        player.travel(direction)
+        if player.current_room.id not in graph:
+            graph[player.current_room.id] = {}
+            for d in player.current_room.get_exits():
+                graph[player.current_room.id][d] = '?'
+        graph[player.current_room.id][reverse[direction]] = previous
+        if '?' not in graph[player.current_room.id].values():
+            complete.add(player.current_room.id) 
+
+    with open("graph.json", "w") as json_file:  
+        json.dump(graph, json_file) 
+
+
+
+
+# Fill this out with directions to walk
+
+traversal_path = []
 
 
 # TRAVERSAL TEST
@@ -51,12 +84,12 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
