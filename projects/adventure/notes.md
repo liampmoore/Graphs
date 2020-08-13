@@ -6,8 +6,8 @@
 - brute force, randomly walk around until you have a complete traversal graph of 500 complete items lmao, then save it to json to save time
 
 ## Use this Traversal Graph Iterative DFT
-- use an iterative DFT with the saved graph
-- save the path you take down to each node until you hit dead end or visited nodes
+- use an iterative DFT with the saved graph of NODES
+- save the path of NODE IDS you take down to each node until you hit dead end or visited nodes
 - when you hit a dead end nested while loop back up the path, adding reverse path until you have unvisited neighbors again
 - iterate through the path of NODE IDS and convert them to directions
 

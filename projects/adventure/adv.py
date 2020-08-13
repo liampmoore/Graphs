@@ -52,7 +52,8 @@ else:
         graph[player.current_room.id][reverse[direction]] = previous
         if '?' not in graph[player.current_room.id].values():
             complete.add(player.current_room.id) 
-
+        for room_id in graph:
+            graph[room_id] = {neighbor_id:direction for direction, neighbor_id in graph[room_id].items()}
     with open("graph.json", "w") as json_file:  
         json.dump(graph, json_file) 
 
@@ -62,6 +63,9 @@ else:
 # Fill this out with directions to walk
 
 traversal_path = []
+
+
+
 
 
 # TRAVERSAL TEST
