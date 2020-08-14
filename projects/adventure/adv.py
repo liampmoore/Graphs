@@ -15,8 +15,8 @@ world = World()
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-# map_file = "maps/test_loop_fork.txt"
-map_file = "maps/main_maze.txt"
+map_file = "maps/test_loop_fork.txt"
+# map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -26,13 +26,6 @@ world.load_graph(room_graph)
 world.print_rooms()
 
 player = Player(world.starting_room)
-
-
-
-
-
-# Helper functions
-# reverse direction helper
 
 
 # BFS returning shortest path to specified node
@@ -56,7 +49,7 @@ def bfs(starting_vertex, destination_vertex, get_neighbors):
           
             for neighbor in get_neighbors(current_vertex):
                 q.append(current_path.copy() + [neighbor])
-
+    
 # dft to traverse to every node    
 def dft(starting_room, get_neighbors):
 
@@ -75,17 +68,57 @@ def dft(starting_room, get_neighbors):
                 s.append(neighbor)
     return traversal
 
-# get neighbors function
+# get neighbors function based on graph which will be slowly built up
+graph = {}
 
 def get_neighbors(current):
-    neighbors = list(room_graph[current][1].values())
+    neighbors = list(graph[current].values())
     return neighbors
 
 def get_direction(current, next_room):
     direction = ''
-    for key, value in room_graph[current][1].items():
+    for key, value in graph[current].items():
         if value == next_room:
             return key
+
+def get_directions(id_list):
+    directions = []
+    for i in range(0, len(id_list) - 1):
+        directions.append(get_direction(id_list[i], id_list[i + 1]))
+    return directions
+
+def reverse(d):
+    if d == 'n':
+        return 's'
+    if d == 's':
+        return 'n'
+    if d == 'w':
+        return 'e'
+    if d == 'e':
+        return 'w'
+
+# Steps to build up a graph:
+
+path = []
+graph[player.current_room.id] = {}
+for direction in player.current_room.get_exits():
+    graph[player.current_room.id][direction] = '?'
+directions = [player.current_room.get_exits()[0]]
+
+while path is not None:
+    while len(directions) != 0:
+        previous = player.current_room.id
+        player.travel(directions.pop(0))
+        if player.current_room.id not in graph:
+            graph[player.current_room.id] = {}
+            for direction in player.current_room.get_exits():
+                graph[player.current_room.id][direction] = '?'
+        graph[previous][direction] = player.current_room.id
+        graph[player.current_room.id][reverse(direction)] = previous
+    path = bfs(player.current_room.id, '?', get_neighbors)
+    if path is not None:
+        directions = get_directions(path)
+print(graph)
 
 # Steps:
 
@@ -109,10 +142,7 @@ traversal_no_gaps.append(traversal[-1])
 
 # # Fill this out with directions to walk
 
-traversal_path = []
-
-for i in range(0, len(traversal_no_gaps) - 1):
-    traversal_path.append(get_direction(traversal_no_gaps[i], traversal_no_gaps[i + 1]))
+traversal_path = get_directions(traversal_no_gaps)
 
 
 # TRAVERSAL TEST
