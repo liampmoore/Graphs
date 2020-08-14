@@ -15,8 +15,8 @@ world = World()
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+# map_file = "maps/test_loop_fork.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -99,26 +99,23 @@ def reverse(d):
 
 # Steps to build up a graph:
 
-path = []
+explored = set()
 graph[player.current_room.id] = {}
 for direction in player.current_room.get_exits():
     graph[player.current_room.id][direction] = '?'
-directions = [player.current_room.get_exits()[0]]
 
-while path is not None:
-    while len(directions) != 0:
-        previous = player.current_room.id
-        player.travel(directions.pop(0))
-        if player.current_room.id not in graph:
-            graph[player.current_room.id] = {}
-            for direction in player.current_room.get_exits():
-                graph[player.current_room.id][direction] = '?'
-        graph[previous][direction] = player.current_room.id
-        graph[player.current_room.id][reverse(direction)] = previous
-    path = bfs(player.current_room.id, '?', get_neighbors)
-    if path is not None:
-        directions = get_directions(path)
-print(graph)
+while len(explored) < len(room_graph):
+    previous = player.current_room.id
+    direction = random.choice(player.current_room.get_exits())
+    player.travel(direction)
+    graph[previous][direction] = player.current_room.id
+    if player.current_room.id not in graph:
+        graph[player.current_room.id] = {}
+        for direction in player.current_room.get_exits():
+            graph[player.current_room.id][direction] = '?'
+    graph[player.current_room.id][reverse(direction)] = previous
+    if '?' not in get_neighbors(player.current_room.id):
+        explored.add(player.current_room.id)
 
 # Steps:
 
